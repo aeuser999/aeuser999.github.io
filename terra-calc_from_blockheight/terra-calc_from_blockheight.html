@@ -55,7 +55,7 @@
 			
 			
 			function get_block_time() {
-				fetch_url(block_url.replace(/(\\|\/){0,}/, '') + '/latest').then(result => {			
+				fetch_url(block_url.replace(/[\/\\]{0,1}$/, '') + "/latest").then(result => {			
 					var lh = parseInt(result.block.header.height);
 					var tm = result.block.header.time;
 					
@@ -105,7 +105,7 @@
 			
 			async function fetch_url(url = '', img = false){
 				var fulfilled_promise = null;
-				
+		
 				await fetch(url, {
 					method: 'GET',					
 					redirect: 'follow',
