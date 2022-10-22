@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<meta name="viewport" content="width=device-width  initial-scale=1.0">
+		<title></title>
+		
+		<meta name = "keywords" content = "" />
+		<meta name = "description" content = "" />
+		
+		<meta property="og:title" content="" />
+		<meta property="og:url" content="" />
+		<meta property="og:image" content="" />
+		<meta property="og:type" content="website" />
+		<meta property="og:description" content="" />
+		
+		<link rel="apple-touch-icon" sizes="180x180" href="">
+		<link rel="icon" type="image/png" sizes="32x32" href="">
+		<link rel="icon" type="image/png" sizes="16x16" href="">
+		<link rel="manifest" href="">
+		
+		<style type="text/css">	
+			div#result_back {
+				margin-top: 1em;
+			}
+		</style>
+	</head>
+	<body>
+		<div>
+			<input type="text" size=90 placeholder="Terra v1 Block Height To Calculate Date From (such as 9988390) (Press Enter When Done)" id="block_to_calculate">
+		</div>
+		<div id="result_back"></div>
+		
+		<script>			
+			const block_url = 'https://lcd.terra.dev/blocks/';
+			const params_url = 'https://lcd.terra.dev/oracle/parameters';
+			var calculate_over_num_of_blocks = 1000;
+			
+			
+			var input = document.querySelector("#block_to_calculate");
+			var myVal = null;
+			
+			input.addEventListener('keydown', (event) => {
+				if (event.keyCode == 13 || event.keyCode == 9) {		
+					myVal = parseInt(input.value);
+					
+					if (myVal === 'NaN') {
+						myVal = null;
+					}
+					else {
+						get_block_time();
+					}
+				}
+			});
+			
+			
+			function get_block_time() {
+				fetch_url(latest_url).then(result => {			
+					var lh = parseInt(result.block.header.height);
+					var tm = result.block.header.time;
+					
+					fetch_url(block_url + (lh-parseInt(calculate_over_num_of_blocks))).then(result => {			
+						tm2 = result.block.header.time;
+						
+						tm = to_unixtime(tm);
+						tm2 = to_unixtime(tm2);
+
+						if (tm !== false && tm2 !== false){
+							var spb = (tm - tm2) / parseInt(calculate_over_num_of_blocks);
+							
+							if (myVal >= lh) {
+								// Convert to milliseconds 
+								tm0 = (tm + (parseInt(myVal - lh)  * spb)) * 1000;
+							
+								ndt = new Date(tm0);
+								document.querySelector("#result_back").innerText = ndt.toUTCString();								
+								//console.log(ndt.toUTCString());
+							}
+							else {
+								document.querySelector("#result_back").innerText = "Block Height Must Be Above: " + lh;
+							}
+						}
+						else {
+							throw 'Problem with time conversion';
+						}
+					})
+					.catch(error => {
+						console.log('Error: ', error);
+					});
+				});		
+			}
+			
+			
+			function to_unixtime(datetime = null) {
+				if (datetime !== null) {
+					var ut = (new Date(datetime).getTime() / 1000).toFixed(0);
+					
+					if (ut !== 'Invalid Date') {
+						return parseInt(ut);
+					}
+				}
+				
+				return false;
+			}
+			
+			async function fetch_url(url = '', img = false){
+				var fulfilled_promise = null;
+				
+				await fetch(url, {
+					method: 'GET',					
+					redirect: 'follow',
+					referrerPolicy: 'no-referrer',
+				})
+				.then(response => {
+					if (img == false) {
+						return response.json();						
+					}
+					else {
+						return response.arrayBuffer();
+					}
+				})
+				.then(result => {					
+					//console.log('Response:', result);					
+					fulfilled_promise = result;					
+				})				
+				.catch(error => {
+					console.error('Error:', error);
+				});
+				
+				return fulfilled_promise;
+			}
+		</script>
+	</body>
+</html>
