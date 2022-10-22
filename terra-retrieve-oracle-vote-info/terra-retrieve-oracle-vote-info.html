@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="viewport" content="width=device-width  initial-scale=1.0">
+		<title></title>
+		
+		<meta name = "keywords" content = "" />
+		<meta name = "description" content = "" />
+		
+		<meta property="og:title" content="" />
+		<meta property="og:url" content="" />
+		<meta property="og:image" content="" />
+		<meta property="og:type" content="website" />
+		<meta property="og:description" content="" />
+		
+		<link rel="apple-touch-icon" sizes="180x180" href="">
+		<link rel="icon" type="image/png" sizes="32x32" href="">
+		<link rel="icon" type="image/png" sizes="16x16" href="">
+		<link rel="manifest" href="">
+		
+		<style type="text/css">	
+			div#result_back {
+				margin-top: 1em;
+			}
+		</style>
+	</head>
+	<body>
+		<div>
+			<input type="text" size=90 placeholder="Terra v1 Block Height To Retrieve Oracle Rates From (such as 9500000) (Press Enter When Done)" id="block_to_calculate">			
+		</div>
+		<div id="result_back"></div>
+		
+		<script>			
+			const latest_url = 'https://lcd.terra.dev/blocks/latest';
+			const block_url = 'https://lcd.terra.dev/cosmos/base/tendermint/v1beta1/blocks/';
+			const params_url = 'https://lcd.terra.dev/terra/oracle/v1beta1/params';
+			const validators_url = 'https://columbus-api.terra.dev/validators';
+			var get_validator_feeder_addr_url = 'https://lcd.terra.dev/oracle/voters/terravaloper1_address_replacement/feeder';
+			var load_validator_moniker = true;
+			var include_time = true;
+			
+			var input = document.querySelector("#block_to_calculate");
+			var myVal = null;
+			
+			if(load_validator_moniker) get_validators_to_localstorage();
+			
+			input.addEventListener('keydown', (event) => {
+				if (event.keyCode == 13 || event.keyCode == 9) {		
+					myVal = parseInt(input.value);
+					
+					if (myVal === 'NaN') {
+						myVal = null;
+					}
+					else {
+						get_block_oracle_votes();
+					}
+				}
+			});
+			
+			
+			function get_block_oracle_votes() {
+				fetch_url(latest_url).then(result => {			
+					var lh = parseInt(result.block.header.height);					
+					
+					if (parseInt(myVal) >= lh || parseInt(myVal) === 0 || parseInt(myVal) == 'NaN') {
+						document.querySelector("#result_back").innerText = "Block Height Must Be Below: " + lh;
+					}
+					else {
+						fetch_url(block_url + (parseInt(myVal))).then(result => {							
+							//console.log(result.block.data.txs);							
+			
+							var feed_addrs = load_validator_moniker === true ? get_validators_to_localstorage() : null;
+							var txs_data_json = result.block.data.txs;							
+							var myRe_test = /terra.oracle.v1beta1.MsgAggregateExchangeRateVote/si;
+							var myRe_retrieve = /[\u0001|\u0002|\u0003|\u0004]([0-9\.]{1,}.*)\u001a,(terra1[a-zA-Z0-9]{1,})/si;
+							var myRe_all = /(.*)/si;
+							var myRe_split = /([0-9]{1,}\.[0-9]{1,})([a-zA-Z]{1,})/g;
+							var cap = '';							
+							
+							if (include_time === true) {
+								cap += new Date(result.block.header.time).toUTCString() + '<br><br><br>';
+							}
+							
+							txs_data_json.forEach(async (element) => {
+								if (myRe_test.test(window.atob(element)) === true) {									
+									var tmp = myRe_retrieve.exec(window.atob(element));									
+									
+									if (tmp !== null && tmp[1]) {										
+										tmp_split = [...tmp[1].matchAll(myRe_split)];
+										
+										tmp_split.forEach(element => {
+											cap += '1 LUNA v1 = ' + element[1] + ' ' + element [2] + '<br>';
+										});
+					
+										if (feed_addrs != null && typeof feed_addrs[tmp[2]] === 'undefined') {
+											feed_addrs = get_validators_to_localstorage(true);
+										}
+				
+										if (feed_addrs == null || typeof feed_addrs[tmp[2]] === 'undefined') {
+											cap += '<span style="margin-left:15px;">Validator Wallet: ' + tmp[2] + '</span><br><br>';
+										}
+										else {
+											cap += '<span style="margin-left:15px;">Validator Wallet: ' + tmp[2] + '</span><br>';
+											cap += '<span style="margin-left:15px;">Validator Operator Address: ' + feed_addrs[tmp[2]].valopr + '</span><br>';
+											cap += '<span style="margin-left:15px;">Validator Moniker: ' + feed_addrs[tmp[2]].moniker + '</span><br><br>';
+										}
+									}
+									else {
+										tmp = myRe_all.exec(window.atob(element));
+										console.log('bad data');
+										console.log(tmp);
+										console.log(window.atob(element));
+									}
+								}								
+							});
+							
+
+							if (cap == '') {
+								fetch_url(params_url).then(result => {
+									cap = result.params.vote_period;
+									document.querySelector("#result_back").innerHTML = 'This Block Does Not Have Oracle Voting Results (Although May Include end_block_events Finalized Exchange Prices), Voting Takes Place Over ' + cap + ' Blocks';
+								})
+								.catch(error => {
+									throw "Problem With RegEx Parsing";
+								});
+							}
+							else {
+								document.querySelector("#result_back").innerHTML = cap;
+							}
+						})
+						.catch (error => {
+							console.log('Error: ', error);
+						});
+					}					
+				});		
+			}
+
+			function to_unixtime(datetime = null) {
+				if (datetime !== null) {
+					var ut = (new Date(datetime).getTime() / 1000).toFixed(0);
+					
+					if (ut !== 'Invalid Date') {
+						return parseInt(ut);
+					}
+				}
+				
+				return false;
+			}
+			
+			function get_validators_to_localstorage(redo = false) {	
+				var ut_now = (Date.now() / 1000).toFixed(0);
+				var feed_addr_replace;
+				var build_json = [];
+				var json = '';
+							
+				try {
+					var ls = localStorage.getItem('oracle_feeder_addrs');	
+				}
+				catch (error) {
+					var ls = null;
+				}
+				
+				// Do not recalculate unless 10min old or more
+				if (ls == null || (redo !== false && ls[Object.keys(ls)[0]].unixtime < (ut_now - (60*10)))) {
+
+					fetch_url(validators_url).then(async (result) => {					
+						
+						await result.forEach(element => {						
+							feed_addr_replace = get_validator_feeder_addr_url.replace('terravaloper1_address_replacement', element.operator_address);
+
+							fetch_url(feed_addr_replace).then(result2 => {
+								build_json.push('"' + result2.result + '": {"moniker": "' + element.description.moniker.replace('"', '\"') + '", "valopr": "' + element.operator_address + '", "unixtime": "' + ut_now + '"}'); 								
+							})
+							.catch (error => {
+								console.log(error);
+								return false;
+							})
+							.finally (() => {
+								json = '{' + build_json.join(',') + '}';
+								localStorage.setItem('oracle_feeder_addrs', json);								
+							});						
+						});
+					})
+					.catch (error => {
+						console.log(error);
+						return false;
+					});
+					
+					ls =  localStorage.getItem('oracle_feeder_addrs');					
+				}
+
+				try {
+					return JSON.parse(ls);
+				}
+				catch (error) {
+					console.log(error);
+					return false;
+				}
+			}
+
+			async function fetch_url(url = '', img = false){
+				var fulfilled_promise = null;
+				
+				await fetch(url, {
+					method: 'GET',					
+					redirect: 'follow',
+					referrerPolicy: 'no-referrer',
+				})
+				.then(response => {
+					if (img == false) {
+						return response.json();						
+					}
+					else {
+						return response.arrayBuffer();
+					}
+				})
+				.then(result => {					
+					//console.log('Response:', result);					
+					fulfilled_promise = result;					
+				})				
+				.catch(error => {
+					console.error('Error:', error);
+				});
+				
+				return fulfilled_promise;
+			}		
+			
+		</script>
+	</body>
+</html>
