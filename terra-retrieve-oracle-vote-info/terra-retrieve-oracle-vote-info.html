@@ -63,7 +63,7 @@
 				fetch_url(latest_url).then(result => {			
 					var lh = parseInt(result.block.header.height);					
 					
-					if (parseInt(myVal) >= lh || parseInt(myVal) === 0 || isNaN(parseInt(myVal))) {
+					if (parseInt(myVal) >= lh || parseInt(myVal) === 0 || isNaN(parseInt(myVal)) || myVal === null) {
 						document.querySelector("#result_back").innerText = "Block Height Must Be Below: " + lh;
 					}
 					else {
