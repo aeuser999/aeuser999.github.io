@@ -49,7 +49,7 @@
 				if (event.keyCode == 13 || event.keyCode == 9) {		
 					myVal = parseInt(input.value);
 					
-					if (myVal === 'NaN') {
+					if (isNaN(myVal)) {
 						myVal = null;
 					}
 					else {
@@ -63,7 +63,7 @@
 				fetch_url(latest_url).then(result => {			
 					var lh = parseInt(result.block.header.height);					
 					
-					if (parseInt(myVal) >= lh || parseInt(myVal) === 0 || parseInt(myVal) == 'NaN') {
+					if (parseInt(myVal) >= lh || parseInt(myVal) === 0 || isNaN(parseInt(myVal))) {
 						document.querySelector("#result_back").innerText = "Block Height Must Be Below: " + lh;
 					}
 					else {

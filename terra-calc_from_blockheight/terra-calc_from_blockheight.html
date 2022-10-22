@@ -44,7 +44,7 @@
 				if (event.keyCode == 13 || event.keyCode == 9) {		
 					myVal = parseInt(input.value);
 					
-					if (myVal === 'NaN') {
+					if (isNaN(myVal)) {
 						myVal = null;
 					}
 					else {
