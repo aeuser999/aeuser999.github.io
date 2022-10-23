@@ -111,10 +111,10 @@
 							});
 							
 
-							if (cap == '') {
+							if (cap == '' || cap.split(/\r\n|\r|\n/).length === 1) {
 								fetch_url(params_url).then(result => {
-									cap = result.params.vote_period;
-									document.querySelector("#result_back").innerHTML = 'This Block Does Not Have Oracle Voting Results (Although May Include end_block_events Finalized Exchange Prices), Voting Takes Place Over ' + cap + ' Blocks';
+									var vote_period = result.params.vote_period;									
+									document.querySelector("#result_back").innerHTML = cap + 'This Block Does Not Have Oracle Voting Results (Although May Include end_block_events Finalized Exchange Prices), Voting Takes Place Over ' + vote_period + ' Blocks';
 								})
 								.catch(error => {
 									throw "Problem With RegEx Parsing";
