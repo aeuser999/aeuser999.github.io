@@ -160,7 +160,7 @@
 					var json_ls = {};
 				}
 
-				// Do not recalculate unless 10min old or more
+				// Do not recalculate unless more than 10min old
 				if (ls == null || (redo !== false && json_ls[Object.keys(json_ls)[0]].unixtime < (ut_now - (60*10)))) {
 
 					fetch_url(validators_url).then(async (result) => {					
