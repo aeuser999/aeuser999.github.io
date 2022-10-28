@@ -35,7 +35,8 @@
 			const latest_url = 'https://lcd.terra.dev/blocks/latest';
 			const block_url = 'https://lcd.terra.dev/cosmos/base/tendermint/v1beta1/blocks/';
 			const params_url = 'https://lcd.terra.dev/terra/oracle/v1beta1/params';
-			const validators_url = 'https://columbus-api.terra.dev/validators';
+			const validators_url = 'https://lcd.terra.dev/cosmos/staking/v1beta1/validators?pagination.limit=1000';
+			//const validators_url = 'https://columbus-api.terra.dev/validators';  // Not As Consistent As LCD Data
 			var get_validator_feeder_addr_url = 'https://lcd.terra.dev/oracle/voters/terravaloper1_address_replacement/feeder';
 			var load_validator_moniker = true;
 			var include_time = true;
@@ -87,11 +88,11 @@
 										tmp_split.forEach(element => {
 											cap += '1 LUNA v1 = ' + element[1] + ' ' + element [2] + '<br>';
 										});
-					
+
 										if (feed_addrs != null && typeof feed_addrs[tmp[2]] === 'undefined') {
-											feed_addrs = get_validators_to_localstorage(true);
+											feed_addrs = get_validators_to_localstorage(true);											
 										}
-				
+										
 										if (feed_addrs == null || typeof feed_addrs[tmp[2]] === 'undefined') {
 											cap += '<span style="margin-left:15px;">Validator Wallet: ' + tmp[2] + '</span><br><br>';
 										}
@@ -111,7 +112,7 @@
 							});
 							
 
-							if (cap == '' || cap.split(/\r\n|\r|\n/).length === 1) {
+							if (cap == '' || cap.split(/\r\n|\r|\n|(?:<br>)/mi).length <= 5) {
 								fetch_url(params_url).then(result => {
 									var vote_period = result.params.vote_period;									
 									document.querySelector("#result_back").innerHTML = cap + 'This Block Does Not Have Oracle Voting Results (Although May Include end_block_events Finalized Exchange Prices), Voting Takes Place Over ' + vote_period + ' Blocks';
@@ -148,20 +149,24 @@
 				var feed_addr_replace;
 				var build_json = [];
 				var json = '';
-							
+				
 				try {
-					var ls = localStorage.getItem('oracle_feeder_addrs');	
+					var ls = localStorage.getItem('oracle_feeder_addrs');
+					var json_ls = JSON.parse(ls);
+					json_ls = json_ls == null ? {} : json_ls;
 				}
 				catch (error) {
 					var ls = null;
+					var json_ls = {};
 				}
-				
+
 				// Do not recalculate unless 10min old or more
-				if (ls == null || (redo !== false && ls[Object.keys(ls)[0]].unixtime < (ut_now - (60*10)))) {
+				if (ls == null || (redo !== false && json_ls[Object.keys(json_ls)[0]].unixtime < (ut_now - (60*10)))) {
 
 					fetch_url(validators_url).then(async (result) => {					
-						
-						await result.forEach(element => {						
+						result = result.validators !== undefined ? result.validators : result;
+				
+						await result.forEach(element => {
 							feed_addr_replace = get_validator_feeder_addr_url.replace('terravaloper1_address_replacement', element.operator_address);
 
 							fetch_url(feed_addr_replace).then(result2 => {
