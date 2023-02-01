@@ -37,7 +37,8 @@
 			const params_url = 'https://lcd.terra.dev/terra/oracle/v1beta1/params';
 			const validators_url = 'https://lcd.terra.dev/cosmos/staking/v1beta1/validators?pagination.limit=1000';
 			//const validators_url = 'https://columbus-api.terra.dev/validators';  // Not As Consistent As LCD Data
-			var get_validator_feeder_addr_url = 'https://lcd.terra.dev/oracle/voters/terravaloper1_address_replacement/feeder';
+			//var get_validator_feeder_addr_url = 'https://lcd.terra.dev/oracle/voters/terravaloper1_address_replacement/feeder';  // Using FCD
+			var get_validator_feeder_addr_url = 'https://fcd.terra.dev/oracle/voters/terravaloper1_address_replacement/feeder';
 			var load_validator_moniker = true;
 			var include_time = true;
 			
