@@ -32,13 +32,12 @@
 		<div id="result_back"></div>
 		
 		<script>			
-			const latest_url = 'https://lcd.terra.dev/blocks/latest';
+			const latest_url = 'https://lcd.terra.dev/cosmos/base/tendermint/v1beta1/blocks/latest';
 			const block_url = 'https://lcd.terra.dev/cosmos/base/tendermint/v1beta1/blocks/';
 			const params_url = 'https://lcd.terra.dev/terra/oracle/v1beta1/params';
-			const validators_url = 'https://lcd.terra.dev/cosmos/staking/v1beta1/validators?pagination.limit=1000';
-			//const validators_url = 'https://columbus-api.terra.dev/validators';  // Not As Consistent As LCD Data
-			//var get_validator_feeder_addr_url = 'https://lcd.terra.dev/oracle/voters/terravaloper1_address_replacement/feeder';  // Using FCD
-			var get_validator_feeder_addr_url = 'https://fcd.terra.dev/oracle/voters/terravaloper1_address_replacement/feeder';
+			const validators_url = 'https://lcd.terra.dev/cosmos/staking/v1beta1/validators?pagination.limit=1000';			
+			var get_validator_feeder_addr_url = 'https://fcd.terra.dev/terra/oracle/v1beta1/validators/terravaloper1_address_replacement/feeder';
+			//var get_validator_feeder_addr_url = 'https://fcd.terraclassic.community/terra/oracle/v1beta1/validators/terravaloper1_address_replacement/feeder';  // Backup FCD
 			var load_validator_moniker = true;
 			var include_time = true;
 			
@@ -171,7 +170,7 @@
 							feed_addr_replace = get_validator_feeder_addr_url.replace('terravaloper1_address_replacement', element.operator_address);
 
 							fetch_url(feed_addr_replace).then(result2 => {
-								build_json.push('"' + result2.result + '": {"moniker": "' + element.description.moniker.replace('"', '\"') + '", "valopr": "' + element.operator_address + '", "unixtime": "' + ut_now + '"}'); 								
+								build_json.push('"' + result2.feeder_addr + '": {"moniker": "' + element.description.moniker.replace('"', '\"') + '", "valopr": "' + element.operator_address + '", "unixtime": "' + ut_now + '"}'); 								
 							})
 							.catch (error => {
 								console.log(error);
