@@ -44,12 +44,7 @@
 				if (event.keyCode == 13 || event.keyCode == 9) {		
 					myVal = parseInt(input.value);
 					
-					if (isNaN(myVal)) {
-						myVal = null;
-					}
-					else {
-						get_block_time();
-					}
+					get_block_time();
 				}
 			});
 			
@@ -68,7 +63,7 @@
 						if (tm !== false && tm2 !== false){
 							var spb = (tm - tm2) / parseInt(calculate_over_num_of_blocks);
 							
-							if (myVal >= lh) {
+							if (myVal >= lh && !isNaN(myVal) && myVal != null) {
 								// Convert to milliseconds 
 								tm0 = (tm + (parseInt(myVal - lh)  * spb)) * 1000;
 							
