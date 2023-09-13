@@ -55,7 +55,7 @@
 			
 			
 			function get_block_time() {
-				fetch_url(latest_url).then(result => {			
+				fetch_url(block_url.replace(/(\\|\/){0,}/, '') + '/latest').then(result => {			
 					var lh = parseInt(result.block.header.height);
 					var tm = result.block.header.time;
 					
