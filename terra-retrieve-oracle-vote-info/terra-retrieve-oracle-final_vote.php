@@ -4,7 +4,7 @@
 	
 	//RPC Documentation (Endpoints):  https://docs.tendermint.com/v0.34/rpc/#/
 	$rpc_base_url = 'https://terra-classic-rpc.publicnode.com/';
-	$lcd_param_base_url = 'https://lcd.terra.dev';
+	$lcd_param_base_url = 'https://terra-classic-lcd.publicnode.com';
 	
 	// To use TLS, download the CA certificate from https://curl.se/docs/caextract.html and put it in the same directory as this php file
 	//		Note:  Current version direct download link is at:  https://curl.se/ca/cacert.pem  
