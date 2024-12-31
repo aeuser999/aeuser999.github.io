@@ -32,12 +32,12 @@
 		<div id="result_back"></div>
 		
 		<script>			
-			const latest_url = 'https://lcd.terra.dev/cosmos/base/tendermint/v1beta1/blocks/latest';
-			const block_url = 'https://lcd.terra.dev/cosmos/base/tendermint/v1beta1/blocks/';
-			const params_url = 'https://lcd.terra.dev/terra/oracle/v1beta1/params';
-			const validators_url = 'https://lcd.terra.dev/cosmos/staking/v1beta1/validators?pagination.limit=1000';			
-			var get_validator_feeder_addr_url = 'https://fcd.terra.dev/terra/oracle/v1beta1/validators/terravaloper1_address_replacement/feeder';
-			//var get_validator_feeder_addr_url = 'https://fcd.terraclassic.community/terra/oracle/v1beta1/validators/terravaloper1_address_replacement/feeder';  // Backup FCD
+			const latest_url = 'https://terra-classic-lcd.publicnode.com/cosmos/base/tendermint/v1beta1/blocks/latest';
+			const block_url = 'https://terra-classic-lcd.publicnode.com/cosmos/base/tendermint/v1beta1/blocks/';
+			const params_url = 'https://terra-classic-lcd.publicnode.com/terra/oracle/v1beta1/params';
+			const validators_url = 'https://terra-classic-lcd.publicnode.com/cosmos/staking/v1beta1/validators?pagination.limit=1000';			
+			var get_validator_feeder_addr_url = 'https://terra-classic-fcd.publicnode.com/terra/oracle/v1beta1/validators/terravaloper1_address_replacement/feeder';
+			
 			var load_validator_moniker = true;
 			var include_time = true;
 			
